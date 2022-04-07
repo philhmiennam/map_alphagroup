@@ -530,7 +530,7 @@
                         method: 'GET',
                         redirect: 'follow'
                     };
-                    console.log('>>check 1', tileset);
+    
                     fetch("/api/getItemTileset/" + tileset, requestOptions)
                         .then(response => response.text())
                         .then(result => {
@@ -567,7 +567,7 @@
                                 "idcommune": id_commune,
                                 "idtypemap": id_typemap,
                             });
-                            console.log('>>check 4');
+                            console.log('>>check 4', raw);
                             var requestOptions = {
                                 method: 'POST',
                                 headers: myHeaders,

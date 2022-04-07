@@ -276,27 +276,31 @@
                                 <img class="img-profile rounded-circle" src="/img/undraw_profile.svg">
                             </a>
                             <!-- Dropdown - User Information -->
+
+                            <!--  -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="/profile">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Tài khoản
-                                </a>
+                                aria-labelledby="userDropdown" id="user_profileON">
                                 <a class="dropdown-item" href="/security/login">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Đăng nhập
                                 </a>
+
                                 <a class="dropdown-item" href="/security/register">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Đăng kí
                                 </a>
-                                <a class="dropdown-item" href="/security/changepassword">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Đổi mật khẩu
-                                </a>
                                 <a class="dropdown-item" href="/security/forgotpassword">
                                     <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Quên mật khẩu
+                                </a>
+                            </div>
+
+                            <!-- Login OFF -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="userDropdown" id="user_profileOFF">
+                                <a class="dropdown-item" href="/profile">
+                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Tài khoản
                                 </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="/api/logout" data-toggle="modal"
@@ -305,6 +309,7 @@
                                     Đăng xuất
                                 </a>
                             </div>
+
                         </li>
                     </ul>
                 </nav>
@@ -527,9 +532,24 @@
 </html>
 
 <script type='text/javascript'>
+    var cookie_auth = document.cookie;
+    var check = false;
+    // var on = document.getElementById("user_profileON");
+    // var off = document.getElementById("user_profileOFF");
+    if (cookie_auth) {
+        check = true;
+        document.getElementById('user_profileON').style.display = "none";
+        document.getElementById('user_profileOFF').style.display = 'block';
+    } else {
+        check = false;
+        document.getElementById('user_profileON').style.display = 'block';
+        document.getElementById('user_profileOFF').style.display = 'none';
+    }
+
+
+
     mapboxgl.accessToken =
         'pk.eyJ1IjoicGhpbGhtaWVubmFtMjRoIiwiYSI6ImNsMHJydWJ6YzA2ZmkzY3FpdWd1bmgwd2kifQ.fBlzNf263foGcEsCMrJ1RQ';
-
     //DEFAULT VIEWS
     const map = new mapboxgl.Map({
         container: 'map', // container ID
@@ -543,12 +563,12 @@
     $.getJSON('/api/map-getAll').then(resp => {
         resp.map.forEach(item => {
             var _status;
-            if(item.status == 1){
+            if (item.status == 1) {
                 _status = 'Công khai';
-            }else{
+            } else {
                 _status = 'Riêng tư'
             }
-           
+
             $('#listDataMap').append(
                 '<tr>' +
                 '<td>' + item.namemap + '</td>' +

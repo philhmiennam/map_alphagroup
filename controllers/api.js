@@ -7,7 +7,6 @@ var express = require('express');
 require("dotenv").config();
 
 
-
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads')
@@ -158,7 +157,7 @@ let createDataMap = async (req, res) => {
 //api GET Item Map With Id
 let getItemMapWithId = async (req, res) => {
     var id = req.params.id;
-    console.log(id);
+    console.log('req.authData', req.authData);
     if (!id) {
         return res.status(500).json({
             message: 'Can not read id'
@@ -234,11 +233,9 @@ let getListTypeMap = async (req, res) => {
 // ******************************* UPLOAD FILE *****************************
 let postUploadFile = async (req, res, next) => {
         var buffer_file = req.file.buffer;
-        var authData = req.authData;
-        console.log(authData);
         // value default
         var username = 'philhmiennam24h';
-        var token = process.env.token;
+        var token = process.env.token ;
         console.log(token, username);
         var token_url = 'https://api.mapbox.com/uploads/v1/' + username + '/credentials?access_token=' + token;
         var url_postMapbox = 'https://api.mapbox.com/uploads/v1/' + username + '?access_token=' + token;
@@ -253,65 +250,64 @@ let postUploadFile = async (req, res, next) => {
             headers: {}
         };
 
-
         axios(config_s3).then(function (response) {
-            console.log(JSON.stringify(response.data));
-            // environment = JSON.parse(JSON.stringify(response.data));
-            // console.log('>>>check2');
-            // try {
-            //     // setting config
-            //     const s3 = new AWS.S3({
-            //         accessKeyId: environment.accessKeyId,
-            //         secretAccessKey: environment.secretAccessKey,
-            //         sessionToken: environment.sessionToken,
-            //         region: region
-            //     })
+            environment = JSON.parse(JSON.stringify(response.data));
+            console.log('>>>check2');
+            try {
+                // setting config
+                const s3 = new AWS.S3({
+                    accessKeyId: environment.accessKeyId,
+                    secretAccessKey: environment.secretAccessKey,
+                    sessionToken: environment.sessionToken,
+                    region: region
+                })
 
-            //     let uploadParams = {
-            //         Key: environment.key,
-            //         Bucket: environment.bucket,
-            //         Body: buffer_file
-            //     }
-            //     console.log('>>>check 3');
-            //     //put file in amazon s3
-            //     s3.putObject(uploadParams).promise().then(response => {
-            //         //Post mapbox
-            //         console.log('>>>check 4');
-            //         const tilesets = `${username}.${req.file.originalname.split(".")[0]}`;
-            //         const filename = `${Date.now()}-${req.file.originalname.split(".")[0]}`;
-            //         var data = JSON.stringify({
-            //             "tileset": tilesets,
-            //             "url": environment.url,
-            //             "name": filename
-            //         });
+                let uploadParams = {
+                    Key: environment.key,
+                    Bucket: environment.bucket,
+                    Body: buffer_file
+                }
+                console.log('>>>check 3');
+                //put file in amazon s3
+                s3.putObject(uploadParams).promise().then(response => {
+                    //Post mapbox
+                    console.log('>>>check 4');
+                    const tilesets = `${username}.${req.file.originalname.split(".")[0]}`;
+                    const filename = `${Date.now()}-${req.file.originalname.split(".")[0]}`;
+                    var data = JSON.stringify({
+                        "tileset": tilesets,
+                        "url": environment.url,
+                        "name": filename
+                    });
 
-            //         var config_mapbox = {
-            //             method: 'post',
-            //             url: url_postMapbox,
-            //             headers: {
-            //                 'Content-Type': 'application/json'
-            //             },
-            //             data: data
-            //         };
+                    var config_mapbox = {
+                        method: 'post',
+                        url: url_postMapbox,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        data: data
+                    };
 
-            //         axios(config_mapbox)
-            //             .then(function (response) { //*************
-            //                 console.log('>>>check 5');
-            //                 return res.status(200).json(response.data);
-            //             })
-            //             .catch(function (error) {
-            //                 return res.status(500).json({
-            //                     error: 'Reload file!' + error,
-            //                     message: 'false'
-            //                 });
-            //             });
-            //     });
-            // } catch (error) {
-            //     return res.status(500).json({
-            //         error: 'Reload file!' + error
-            //     });
-            // }
+                    axios(config_mapbox)
+                        .then(function (response) { //*************
+                            console.log('>>>check 5');
+                            return res.status(200).json(response.data);
+                        })
+                        .catch(function (error) {
+                            return res.status(500).json({
+                                error: 'Reload file!' + error,
+                                message: 'false'
+                            });
+                        });
+                });
+            } catch (error) {
+                return res.status(500).json({
+                    error: 'Reload file!' + error
+                });
+            }
         }).catch(function (error) {
+            console.log(error);
             return res.status(500).json(error);
         });
 } // status 200

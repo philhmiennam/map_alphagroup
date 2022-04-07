@@ -59,25 +59,25 @@ router.get('/commune/getWithId/:id', Controller.getCommnuneWithId);
 router.get('/type-map/get-all', Controller.getListTypeMap);
 
 router.get('/getItemTileset/:id', Controller.getItemMapWithTileSet);
-router.use(midi.checkToken);
+
 
 function verifyToken(req, res, next) {
     var token = req.cookies.auth;
     if (token) {
-        jwt.verify(token, process.env.accsess_token_secret, (err, authData) => {
-            if (err) {
-                // return res.redirect("/security/login");
-                return res.status(401).json({
-                    success: false,
-                    message: 'Token is not valid'
-                });
-            } else {
-                console.log(authData);
-                next();
-            }
-        });
+        try {
+            var authData = jwt.verify(token, process.env.accsess_token_secret);
+            req.authData = authData;
+            next();
+        } catch (err) {
+            return res.status(500).json({
+                message: err
+            })
+            // return res.status(401).json({
+            //             success: false,
+            //             message: 'Token is not valid'
+            // });
+        }
     } else {
-       alert("Login")
         return res.status(401).json({
             success: false,
             message: 'Vui lòng đăng nhập!'
