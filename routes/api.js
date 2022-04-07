@@ -3,12 +3,11 @@ const express = require("express");
 const router = express.Router();
 const Controller = require("../controllers/api");
 const multer = require('multer');
-const logout = require('express-passport-logout');
 const bodyParser = require('body-parser');
-var cookies = require("cookie-parser");
+const midi = require('../controllers/midi')
 
-const passport = require('passport');
-const localStrategy = require('passport-local').Strategy;
+const jwt = require('jsonwebtoken');
+
 
 const upload = multer({
     storage: storage
@@ -34,13 +33,13 @@ var storage = multer.diskStorage({
 router.post('/login', Controller.DEMOLOGIN);
 router.get('/logout', Controller.logout);
 
-router.get('/map-getAll', verifyToken, Controller.getAllListMap_filter);
+router.get('/map-getAll', Controller.getAllListMap_filter);
 
 router.get('/item-map/:id', verifyToken, Controller.getItemMapWithId);
-router.post('/create-data-map', Controller.createDataMap);
+router.post('/create-data-map', verifyToken, Controller.createDataMap);
 
 //upload file
-router.post('/uploadfile', upload.single('file'), Controller.postUploadFile);
+router.post('/uploadfile', upload.single('file'), verifyToken, Controller.postUploadFile);
 
 //-------------- API Address -------------
 //api get all province
@@ -60,17 +59,29 @@ router.get('/commune/getWithId/:id', Controller.getCommnuneWithId);
 router.get('/type-map/get-all', Controller.getListTypeMap);
 
 router.get('/getItemTileset/:id', Controller.getItemMapWithTileSet);
-
+router.use(midi.checkToken);
 
 function verifyToken(req, res, next) {
-    var token = req;
-    console.log(token);
-    if (token != null) {
-        req.token = token;
-        next();
+    var token = req.cookies.auth;
+    if (token) {
+        jwt.verify(token, process.env.accsess_token_secret, (err, authData) => {
+            if (err) {
+                // return res.redirect("/security/login");
+                return res.status(401).json({
+                    success: false,
+                    message: 'Token is not valid'
+                });
+            } else {
+                console.log(authData);
+                next();
+            }
+        });
     } else {
-        res.sendStatus(403);
-        return res.redirect('/security/login');
+       alert("Login")
+        return res.status(401).json({
+            success: false,
+            message: 'Vui lòng đăng nhập!'
+        });
     }
 }
 

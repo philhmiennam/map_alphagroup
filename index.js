@@ -5,8 +5,10 @@ const db = require("./config/connectDB");
 require('dotenv').config();
 const multer = require('multer');
 const jwt = require('jsonwebtoken');
-
 var bodyParser = require('body-parser');
+
+var cookieParser = require('cookie-parser');
+app.use(cookieParser());
 
 // const port = process.env.PROT || 8080;
 const port = 3000;
@@ -30,42 +32,19 @@ app.use(bodyParser.urlencoded({
 app.use("/", require("./routes/web"));
 app.use("/api", require("./routes/api"));
 
-app.post("/postdemo", verifyToken, (req, res) => {
-  jwt.verify(req.token, process.env.accsess_token_secret, (err, authData) => {
-    if (err) {
-      res.sendStatus(403);
-    } else {
-      res.json({
-        message: "post created...",
-        authData
-      })
-    }
-  })
-});
-
-function verifyToken(req, res, next) {
-  var token = req.cookies.auth;
-  console.log(token);
-  // const bearHeader = req.headers['authorization'];
-  // if (typeof bearHeader !== 'undefined') {
-  //   const bearer = bearHeader.split(' ');
-  //   const bearerToken = bearer[1];
-  //   req.token = bearerToken;
-  //   console.log(req.token);
-  //   next();
-  // } else {
-  //   res.sendStatus(403);
-  // }
-}
-
-
-
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   var err = new Error("Not Found");
   err.status = 404;
   res.status(404).send({
     error: "Đường dẫn không đúng!"
+  });
+});
+
+// catch 401 err Login
+app.use(function (req, res, next) {
+  res.status(401).send({
+    error: "Vui lòng đăng nhập!"
   });
 });
 
